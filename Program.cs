@@ -11,6 +11,13 @@ internal class Program
         var transactions = SupportBank.GetTransactions();
         var accounts = SupportBank.CreatingAccounts(transactions);
         SupportBank.ListAll(accounts, transactions);
+
+        // string? userInput = Console.ReadLine();
+        // while (userInput == null) {
+        //     Console.WriteLine("Please enter a valid name.");
+        //     userInput = Console.ReadLine();
+        // }
+        SupportBank.ListAccount("Chris W",transactions);
          
     }
 }
