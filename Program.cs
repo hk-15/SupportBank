@@ -16,17 +16,16 @@ internal class Program
 
             foreach (var transaction in transactions)
             {
-                // Console.WriteLine($"Date: {transaction.Date}, From: {transaction.From}, To: {transaction.To}, Narrative: {transaction.Narrative}, Amount: {transaction.Amount}");
                 names.Add(transaction.From);
                 names.Add(transaction.To);
             }
-            //Console.WriteLine(names[1]);
             List<string?> UniqueNames = new HashSet<string?>(names).ToList();
-            
+
+            List<Account> accounts = new List<Account>();
+
             foreach (var name in UniqueNames)
             {
-                // Console.WriteLine($"Date: {transaction.Date}, From: {transaction.From}, To: {transaction.To}, Narrative: {transaction.Narrative}, Amount: {transaction.Amount}");
-               Console.WriteLine(name);
+                accounts.Add(new Account {Name = name});
             }
 
 
