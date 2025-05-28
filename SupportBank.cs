@@ -17,7 +17,7 @@ public class SupportBank
         }
     }
 
-    public static List<Account> CreatingAccounts(List<Transaction> transactions)
+    public static List<string?> GetUniqueNames(List<Transaction> transactions)
     {
         List<string?> names = new List<string?>();
 
@@ -26,11 +26,15 @@ public class SupportBank
             names.Add(transaction.From);
             names.Add(transaction.To);
         }
-        List<string?> UniqueNames = new HashSet<string?>(names).ToList();
+        List<string?> uniqueNames = new HashSet<string?>(names).ToList();
+        return uniqueNames;
+    }
+    public static List<Account> CreateAccounts(List<string?> uniqueNames)
+    {
 
         List<Account> accounts = new List<Account>();
 
-        foreach (var name in UniqueNames)
+        foreach (var name in uniqueNames)
         {
             accounts.Add(new Account { Name = name });
         }
@@ -50,12 +54,13 @@ public class SupportBank
 
             result += $"{account.Name} has given £{totalOut}, has receieved £{totalIn}. Their balance is £{totalBalance}.\n";
         }
+        Console.Write(result);
         return result;
 
     }
 
 
-    public static List<Transaction> ListAccount(string name, List<Transaction> transactions)
+    public static List<Transaction> ListAccount(string? name, List<Transaction> transactions)
     {
         List<Transaction> accountStatement = new List<Transaction>();
 
@@ -72,8 +77,6 @@ public class SupportBank
         {
             Console.WriteLine($"\n Date: {statement.Date}\n From: {statement.From}\n To: {statement.To}\n Narrative: {statement.Narrative}\n Amount: £{statement.Amount}\n");
             Console.WriteLine("------------");
-
-
         }
         return accountStatement;
     }
