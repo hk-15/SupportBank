@@ -1,20 +1,47 @@
 using CsvHelper;
+using CsvHelper.Configuration;
 using System.Globalization;
 using System.Transactions;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 
 
 
 public class SupportBank
 {
 
+    private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+
     public static List<Transaction> GetTransactions()
     {
-        using (var reader = new StreamReader("./Transactions2014.csv"))
-        using (var csv = new CsvReader(reader, CultureInfo.CurrentCulture))
+        Logger.Info("Getting transactions...");
+        string[] filePaths = ["./Transactions2014.csv", "./DodgyTransactions2015.csv"];
+
+        var transactions = new List<Transaction>();
+
+        // try
+        // {
+        foreach (var path in filePaths)
         {
-            var transactions = csv.GetRecords<Transaction>().ToList();
+            using (var reader = new StreamReader(path))
+            using (var csv = new CsvReader(reader, CultureInfo.CurrentCulture))
+            {
+                csv.Context.RegisterClassMap<TransactionMap>();
+                transactions.AddRange(csv.GetRecords<Transaction>().ToList());
+    
+                // transactions.AddRange(csv.GetRecords<Transaction>().ToList());
+                Logger.Info($"Got transactions");
+            }
+                
+            }
             return transactions;
-        }
+        // }
+        // catch ()
+        // {
+
+        // }
+
     }
 
     public static List<string?> GetUniqueNames(List<Transaction> transactions)
