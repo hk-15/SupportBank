@@ -19,28 +19,28 @@ public class SupportBank
         string[] filePaths = ["./Transactions2014.csv", "./DodgyTransactions2015.csv"];
 
         var transactions = new List<Transaction>();
+		var bad = new List<string>();
 
-        // try
-        // {
         foreach (var path in filePaths)
-        {
-            using (var reader = new StreamReader(path))
-            using (var csv = new CsvReader(reader, CultureInfo.CurrentCulture))
             {
-                csv.Context.RegisterClassMap<TransactionMap>();
-                transactions.AddRange(csv.GetRecords<Transaction>().ToList());
-    
-                // transactions.AddRange(csv.GetRecords<Transaction>().ToList());
-                Logger.Info($"Got transactions");
-            }
-                
+                var config = new CsvConfiguration(CultureInfo.CurrentCulture);
+                using var reader = new StreamReader(path);
+                using var csv = new CsvReader(reader, config);
+
+                while (csv.Read())
+                {
+			        try {
+                        var record = csv.GetRecord<Transaction>();
+                        transactions.Add(record);
+                    } 
+                    catch (Exception err) 
+                    {
+                        Logger.Error($"Error at row {csv.Parser.Row} in {path}: {err}");
+                    }
+                    
+                }
             }
             return transactions;
-        // }
-        // catch ()
-        // {
-
-        // }
 
     }
 
@@ -52,7 +52,8 @@ public class SupportBank
         {
             names.Add(transaction.From);
             names.Add(transaction.To);
-        }
+        }               
+
         List<string?> uniqueNames = new HashSet<string?>(names).ToList();
         return uniqueNames;
     }

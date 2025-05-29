@@ -24,7 +24,7 @@ internal class Program
 
 
         var transactions = SupportBank.GetTransactions();
-        Logger.Info("Sucessfully got list of transactions");
+        Logger.Info("Sucessfully got list of valid transactions");
 
         var uniqueNames = SupportBank.GetUniqueNames(transactions);
         var accounts = SupportBank.CreateAccounts(uniqueNames);
