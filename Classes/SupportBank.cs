@@ -23,25 +23,32 @@ public class SupportBank
 
         foreach (var path in filePaths)
             {
-                var config = new CsvConfiguration(CultureInfo.CurrentCulture);
+                var config = new CsvConfiguration(CultureInfo.CurrentCulture)
+                {
+                    HasHeaderRecord = true,
+                };
                 using var reader = new StreamReader(path);
                 using var csv = new CsvReader(reader, config);
-
+                                
                 while (csv.Read())
+            {
+                try
                 {
-			        try {
-                        var record = csv.GetRecord<Transaction>();
-                        transactions.Add(record);
-                    } 
-                    catch (Exception err) 
+                    var record = csv.GetRecord<Transaction>();
+                    transactions.Add(record);
+                }
+                catch (Exception)
+                {
+                    int column;
+                    if (csv.Parser.Context.Reader != null)
                     {
-                        Logger.Error($"Error at row {csv.Parser.Row} in {path}: {err}");
+                        column = csv.Parser.Context.Reader.CurrentIndex;
+                        Logger.Error($"Error at row {csv.Parser.Row} in column {column + 1} in {path}: {csv.Parser.Context.Reader.HeaderRecord?[column]} is invalid.");
                     }
-                    
                 }
             }
+            }
             return transactions;
-
     }
 
     public static List<string?> GetUniqueNames(List<Transaction> transactions)
