@@ -11,10 +11,9 @@ public class SupportBank
 {
     private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
-    public static List<JSONTransaction> GetJSONTransactions()
+    public static List<JSONTransaction> GetJSONTransactions(string filePath)
     {
-        string fileName = "./Transactions2013.json";
-        string jsonString = File.ReadAllText(fileName);
+        string jsonString = File.ReadAllText(filePath);
         var jsonTransactions = JsonConvert.DeserializeObject<List<JSONTransaction>>(jsonString);
         if (jsonTransactions != null)
         {
@@ -29,40 +28,35 @@ public class SupportBank
         var transactions = jsonTransactions.Select(u => new Transaction { Date = DateOnly.FromDateTime(u.Date), From = u.From, To = u.To, Narrative = u.Narrative, Amount = u.Amount }).ToList();
         return transactions;
     }
-    
-    public static List<Transaction> GetCSVTransactions()
+
+    public static List<Transaction> GetCSVTransactions(string filePath)
     {
         Logger.Info("Getting transactions...");
-        string[] filePaths = ["./Transactions2014.csv", "./DodgyTransactions2015.csv"];
-
         var transactions = new List<Transaction>();
 
-        foreach (var path in filePaths)
+        var config = new CsvConfiguration(CultureInfo.CurrentCulture)
         {
-            var config = new CsvConfiguration(CultureInfo.CurrentCulture)
-            {
-                HasHeaderRecord = true,
-            };
-            using var reader = new StreamReader(path);
-            using var csv = new CsvReader(reader, config);
+            HasHeaderRecord = true,
+        };
+        using var reader = new StreamReader(filePath);
+        using var csv = new CsvReader(reader, config);
 
-            while (csv.Read())
+        while (csv.Read())
+        {
+            try
             {
-                try
+                var record = csv.GetRecord<Transaction>();
+                transactions.Add(record);
+            }
+            catch (Exception)
+            {
+                int column;
+                if (csv.Parser.Context.Reader != null)
                 {
-                    var record = csv.GetRecord<Transaction>();
-                    transactions.Add(record);
-                }
-                catch (Exception)
-                {
-                    int column;
-                    if (csv.Parser.Context.Reader != null)
-                    {
-                        column = csv.Parser.Context.Reader.CurrentIndex;
-                        Logger.Error(
-                            $"Error at row {csv.Parser.Row} in column {column + 1} in {path}: {csv.Parser.Context.Reader.HeaderRecord?[column]} is invalid."
-                        );
-                    }
+                    column = csv.Parser.Context.Reader.CurrentIndex;
+                    Logger.Error(
+                        $"Error at row {csv.Parser.Row} in column {column + 1} in {filePath}: {csv.Parser.Context.Reader.HeaderRecord?[column]} is invalid."
+                    );
                 }
             }
         }

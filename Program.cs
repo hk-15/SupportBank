@@ -10,23 +10,40 @@ internal class Program
     private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
     public static void Main()
     {
-        SupportBank.GetJSONTransactions();
         var config = new LoggingConfiguration();
-        var target = new FileTarget { FileName = @"C:\Users\AliBar\Documents\Training\SupportBank\SupportBank.log", Layout = @"${longdate} ${level} - ${logger}: ${message}" };
+        var target = new FileTarget { FileName = @".\SupportBank\SupportBank.log", Layout = @"${longdate} ${level} - ${logger}: ${message}" };
         config.AddTarget("File Logger", target);
         config.LoggingRules.Add(new LoggingRule("*", LogLevel.Debug, target));
         LogManager.Configuration = config;
 
         Logger.Info("Program started running.");
 
-        var jsonTransactions = SupportBank.GetJSONTransactions();
-        var transactions = SupportBank.JsonConversion(jsonTransactions);
-        Logger.Info("Sucessfully got list of valid transactions");
+        string filePath;
+        List<Transaction> transactions = new List<Transaction>();
 
+        Console.WriteLine("Which year's data do you want to view? 2013, 2014 or 2015?");
+        var firstUserInput = Console.ReadLine();
+        if (firstUserInput == "2013") {
+            filePath = "./Transactions2013.json";
+            var jsonTransactions = SupportBank.GetJSONTransactions(filePath);
+            transactions.AddRange(SupportBank.JsonConversion(jsonTransactions));
+        } else if (firstUserInput == "2014") {
+            filePath = "./Transactions2014.csv";
+             transactions.AddRange(SupportBank.GetCSVTransactions(filePath));
+        } else if (firstUserInput == "2015") {
+            filePath = "./DodgyTransactions2015.csv";
+            transactions.AddRange(SupportBank.GetCSVTransactions(filePath));
+        } else {
+            while (firstUserInput != "2013" && firstUserInput != "2014" && firstUserInput != "2015") {
+                Console.WriteLine("Please enter a valid year.");
+                firstUserInput = Console.ReadLine();
+            }
+        }
+    
+        Logger.Info("Sucessfully got list of valid transactions");
         var uniqueNames = SupportBank.GetUniqueNames(transactions);
         var accounts = SupportBank.CreateAccounts(uniqueNames);
         Logger.Info("Sucessfully created accounts");
-
 
         int initialInput;
         Logger.Info("Starting user input");
