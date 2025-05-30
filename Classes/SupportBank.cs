@@ -1,11 +1,8 @@
 using CsvHelper;
 using CsvHelper.Configuration;
 using System.Globalization;
-using System.Transactions;
 using NLog;
-using NLog.Config;
-using NLog.Targets;
-
+using Newtonsoft.Json;
 
 
 public class SupportBank
@@ -13,24 +10,44 @@ public class SupportBank
 
     private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
-    public static List<Transaction> GetTransactions()
+
+    public static void GetJSONTransactions()
+    {
+
+        string fileName = "./Transactions2013.json";
+        string jsonString = File.ReadAllText(fileName);        
+       // Console.WriteLine(jsonString);
+        var result = JsonConvert.DeserializeObject<List<JSONTransaction>>(jsonString);
+        // var result = JsonConvert.DeserializeObject<JSONTransaction>(jsonString);
+
+
+        //var result = JsonConvert.DeserializeObject<List<JSONTransaction>>("./Transactions2013.json");
+        foreach (var item in result)
+        {
+            Console.WriteLine(item.Date);
+        }
+        
+
+        //return result;
+    }
+
+    public static List<Transaction> GetCSVTransactions()
     {
         Logger.Info("Getting transactions...");
         string[] filePaths = ["./Transactions2014.csv", "./DodgyTransactions2015.csv"];
 
         var transactions = new List<Transaction>();
-		var bad = new List<string>();
 
         foreach (var path in filePaths)
+        {
+            var config = new CsvConfiguration(CultureInfo.CurrentCulture)
             {
-                var config = new CsvConfiguration(CultureInfo.CurrentCulture)
-                {
-                    HasHeaderRecord = true,
-                };
-                using var reader = new StreamReader(path);
-                using var csv = new CsvReader(reader, config);
-                                
-                while (csv.Read())
+                HasHeaderRecord = true,
+            };
+            using var reader = new StreamReader(path);
+            using var csv = new CsvReader(reader, config);
+
+            while (csv.Read())
             {
                 try
                 {
@@ -47,8 +64,8 @@ public class SupportBank
                     }
                 }
             }
-            }
-            return transactions;
+        }
+        return transactions;
     }
 
     public static List<string?> GetUniqueNames(List<Transaction> transactions)
@@ -79,6 +96,8 @@ public class SupportBank
     public static string ListAll(List<Account> accounts, List<Transaction> transactions)
 
     {
+        Logger.Info("Starting ListAll method");
+
         string result = "";
         foreach (var account in accounts)
         {
@@ -97,6 +116,8 @@ public class SupportBank
 
     public static List<Transaction> ListAccount(string? name, List<Transaction> transactions)
     {
+        Logger.Info("Starting ListAccount method");
+
         List<Transaction> accountStatement = new List<Transaction>();
 
         foreach (var transaction in transactions)

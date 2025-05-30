@@ -1,6 +1,3 @@
-using CsvHelper.Configuration;
-using NLog;
-
 public class Transaction
 {
     public DateOnly Date { get; set; }
